@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Factory — AI App Builder</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0d;
+    --surface: #141414;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --amber: #f5a623;
+    --amber-dark: #c4831a;
+    --amber-glow: rgba(245,166,35,0.15);
+    --text: #e8e8e8;
+    --text-muted: #777;
+    --red: #e05252;
+    --green: #4caf82;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 80px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 640px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .logo {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 0 20px rgba(245,166,35,0.4));
+  }
+
+  .title {
+    font-size: clamp(28px, 6vw, 42px);
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: var(--amber);
+    text-shadow: 0 0 40px rgba(245,166,35,0.3);
+  }
+
+  .tagline {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    font-weight: 400;
+  }
+
+  /* Form card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .field {
+    margin-bottom: 22px;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  input[type=text], input[type=password], textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 15px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+    resize: vertical;
+  }
+
+  input[type=text]::placeholder, input[type=password]::placeholder, textarea::placeholder {
+    color: #444;
+  }
+
+  input[type=text]:focus, input[type=password]:focus, textarea:focus {
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px var(--amber-glow);
+  }
+
+  .field-hint {
+    margin-top: 5px;
+    font-size: 11px;
+    color: #555;
+  }
+
+  .error-inline {
+    margin-top: 5px;
+    font-size: 12px;
+    color: var(--red);
+    display: none;
+  }
+
+  .error-inline.visible {
+    display: block;
+  }
+
+  .build-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--amber), var(--amber-dark));
+    color: #0d0d0d;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(245,166,35,0.25);
+    margin-top: 8px;
+  }
+
+  .build-btn:hover:not(:disabled) {
+    opacity: 0.92;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px rgba(245,166,35,0.35);
+  }
+
+  .build-btn:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .build-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Status panel */
+  .status-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    display: none;
+  }
+
+  .status-panel.visible {
+    display: block;
+  }
+
+  .status-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 28px;
+  }
+
+  .step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+  }
+
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: calc(50% + 14px);
+    right: calc(-50% + 14px);
+    height: 2px;
+    background: var(--border);
+    transition: background 0.4s;
+  }
+
+  .step.done:not(:last-child)::after {
+    background: var(--amber);
+  }
+
+  .step-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.4s;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step.done .step-dot {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: #0d0d0d;
+  }
+
+  .step.active .step-dot {
+    border-color: var(--amber);
+    background: var(--amber-glow);
+    color: var(--amber);
+    animation: pulse-dot 1.4s ease-in-out infinite;
+  }
+
+  .step.failed .step-dot {
+    border-color: var(--red);
+    background: rgba(224,82,82,0.1);
+    color: var(--red);
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(245,166,35,0); }
+  }
+
+  .step-name {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: center;
+    transition: color 0.4s;
+  }
+
+  .step.done .step-name,
+  .step.active .step-name {
+    color: var(--amber);
+  }
+
+  .step.failed .step-name {
+    color: var(--red);
+  }
+
+  /* Result states */
+  .result-success {
+    display: none;
+    text-align: center;
+    padding-top: 4px;
+  }
+
+  .result-success.visible {
+    display: block;
+  }
+
+  .celebration {
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
+
+  .result-message {
+    font-size: 15px;
+    color: var(--green);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .live-link {
+    display: inline-block;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--amber);
+    text-decoration: none;
+    word-break: break-all;
+    padding: 10px 16px;
+    border: 1px solid var(--amber);
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .live-link:hover {
+    background: var(--amber-glow);
+  }
+
+  .result-error {
+    display: none;
+    text-align: center;
+    padding-top: 4px;
+  }
+
+  .result-error.visible {
+    display: block;
+  }
+
+  .error-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--red);
+    margin-bottom: 8px;
+  }
+
+  .error-body {
+    font-size: 13px;
+    color: #aa4444;
+    margin-bottom: 18px;
+    word-break: break-word;
+  }
+
+  .try-again-btn {
+    padding: 10px 24px;
+    background: transparent;
+    border: 1px solid var(--red);
+    border-radius: 8px;
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .try-again-btn:hover {
+    background: rgba(224,82,82,0.08);
+  }
+
+  /* Grid lines decorative bg */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(245,166,35,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,166,35,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; }
+
+  @media (max-width: 480px) {
+    .card, .status-panel { padding: 22px 18px; }
+    .step-name { font-size: 9px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="header">
+    <span class="logo">🏭</span>
+    <div class="title">THE FACTORY</div>
+    <div class="tagline">Describe it. Own it. Live in minutes.</div>
+  </header>
+
+  <div class="card">
+    <div class="field">
+      <label for="appName">App Name</label>
+      <input type="text" id="appName" placeholder="my-awesome-app" autocomplete="off" spellcheck="false">
+      <div class="field-hint">Use lowercase letters and hyphens only</div>
+    </div>
+    <div class="field">
+      <label for="description">Describe Your App</label>
+      <textarea id="description" rows="4" placeholder="A task management app with drag-and-drop boards, dark mode, and real-time collaboration..."></textarea>
+    </div>
+    <div class="field">
+      <label for="passcode">Passcode</label>
+      <input type="password" id="passcode" placeholder="••••••••">
+      <div class="error-inline" id="passcodeError">Invalid passcode — try again.</div>
+    </div>
+    <button class="build-btn" id="buildBtn" onclick="startBuild()">⚙ BUILD</button>
+  </div>
+
+  <div class="status-panel" id="statusPanel">
+    <div class="status-label">Build Status</div>
+    <div class="steps">
+      <div class="step" id="step-queued">
+        <div class="step-dot" id="dot-queued">1</div>
+        <div class="step-name">Queued</div>
+      </div>
+      <div class="step" id="step-building">
+        <div class="step-dot" id="dot-building">2</div>
+        <div class="step-name">Building</div>
+      </div>
+      <div class="step" id="step-deploying">
+        <div class="step-dot" id="dot-deploying">3</div>
+        <div class="step-name">Deploying</div>
+      </div>
+      <div class="step" id="step-live">
+        <div class="step-dot" id="dot-live">4</div>
+        <div class="step-name">Live</div>
+      </div>
+    </div>
+
+    <div class="result-success" id="resultSuccess">
+      <div class="celebration">🎉</div>
+      <div class="result-message">Your app is live and ready!</div>
+      <a class="live-link" id="liveLink" href="#" target="_blank" rel="noopener">Loading URL...</a>
+    </div>
+
+    <div class="result-error" id="resultError">
+      <div class="error-title">Build Failed</div>
+      <div class="error-body" id="errorBody">An unknown error occurred.</div>
+      <button class="try-again-btn" onclick="resetForm()">Try Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'https://canvbkibjgcnqowjtarf.supabase.co/functions/v1/swift-worker';
+  const AUTH = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbnZia2liamdjbnFvd2p0YXJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NzE0NDYsImV4cCI6MjA5OTM0NzQ0Nn0.TLskVoTaYI90avy09IuM_kkKvAYUMETTntZkn2M807I';
+
+  let pollTimer = null;
+
+  const stepOrder = ['queued', 'building', 'deploying', 'live'];
+  const statusMap = {
+    pending: 'queued',
+    building: 'building',
+    deploying: 'deploying',
+    done: 'live',
+    failed: 'failed'
+  };
+
+  function setStepState(targetStep, state) {
+    // state: 'none' | 'done' | 'active' | 'failed'
+    const el = document.getElementById('step-' + targetStep);
+    if (!el) return;
+    el.classList.remove('done', 'active', 'failed');
+    if (state !== 'none') el.classList.add(state);
+  }
+
+  function updateSteps(currentStatus) {
+    // currentStatus: 'queued' | 'building' | 'deploying' | 'live' | 'failed'
+    if (currentStatus === 'failed') {
+      // Mark all as none, show where it stopped — we don't know which step failed
+      // Just leave whatever was active and add failed to last active
+      const dots = document.querySelectorAll('.step');
+      dots.forEach(d => {
+        if (d.classList.contains('active')) {
+          d.classList.remove('active');
+          d.classList.add('failed');
+        }
+      });
+      return;
+    }
+
+    const currentIndex = stepOrder.indexOf(currentStatus);
+    stepOrder.forEach((step, i) => {
+      if (i < currentIndex) setStepState(step, 'done');
+      else if (i === currentIndex) setStepState(step, currentStatus === 'live' ? 'done' : 'active');
+      else setStepState(step, 'none');
+    });
+  }
+
+  function showStatus() {
+    document.getElementById('statusPanel').classList.add('visible');
+  }
+
+  function showSuccess(url) {
+    document.getElementById('resultSuccess').classList.add('visible');
+    const link = document.getElementById('liveLink');
+    link.href = url;
+    link.textContent = url;
+  }
+
+  function showError(msg) {
+    document.getElementById('resultError').classList.add('visible');
+    document.getElementById('errorBody').textContent = msg || 'An unknown error occurred.';
+  }
+
+  function setBuildBtn(disabled) {
+    document.getElementById('buildBtn').disabled = disabled;
+  }
+
+  function resetSteps() {
+    stepOrder.forEach(s => setStepState(s, 'none'));
+    document.getElementById('resultSuccess').classList.remove('visible');
+    document.getElementById('resultError').classList.remove('visible');
+  }
+
+  function resetForm() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = null;
+    setBuildBtn(false);
+    document.getElementById('statusPanel').classList.remove('visible');
+    resetSteps();
+    document.getElementById('passcodeError').classList.remove('visible');
+  }
+
+  function stopPolling() {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  }
+
+  async function pollBuild(buildId) {
+    try {
+      const res = await fetch(API_BASE + '?buildId=' + encodeURIComponent(buildId), {
+        method: 'GET',
+        headers: { 'Authorization': AUTH }
+      });
+
+      if (res.status === 401) {
+        stopPolling();
+        setBuildBtn(false);
+        document.getElementById('passcodeError').textContent = 'Invalid passcode — try again.';
+        document.getElementById('passcodeError').classList.add('visible');
+        resetSteps();
+        document.getElementById('statusPanel').classList.remove('visible');
+        return;
+      }
+
+      if (!res.ok) {
+        const txt = await res.text().catch(() => res.statusText);
+        stopPolling();
+        setBuildBtn(false);
+        updateSteps('failed');
+        showError(txt || 'Server error: ' + res.status);
+        return;
+      }
+
+      const data = await res.json();
+      const rawStatus = (data.status || '').toLowerCase();
+      const mappedStatus = statusMap[rawStatus] || 'queued';
+
+      updateSteps(mappedStatus);
+
+      if (rawStatus === 'done') {
+        stopPolling();
+        setBuildBtn(false);
+        showSuccess(data.site_url || '#');
+      } else if (rawStatus === 'failed') {
+        stopPolling();
+        setBuildBtn(false);
+        showError(data.error || data.message || 'The build encountered an error.');
+      }
+    } catch (err) {
+      // Network error — keep polling, don't crash
+      console.warn('Poll error:', err);
+    }
+  }
+
+  async function startBuild() {
+    const repoName = document.getElementById('appName').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const passcode = document.getElementById('passcode').value;
+
+    document.getElementById('passcodeError').classList.remove('visible');
+
+    if (!repoName) {
+      document.getElementById('appName').focus();
+      return;
+    }
+    if (!description) {
+      document.getElementById('description').focus();
+      return;
+    }
+    if (!passcode) {
+      document.getElementById('passcode').focus();
+      return;
+    }
+
+    setBuildBtn(true);
+    resetSteps();
+    showStatus();
+    updateSteps('queued');
+
+    try {
+      const res = await fetch(API_BASE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': AUTH
+        },
+        body: JSON.stringify({ repoName, description, passcode })
+      });
+
+      if (res.status === 401) {
+        setBuildBtn(false);
+        document.getElementById('passcodeError').textContent = 'Invalid passcode — try again.';
+        document.getElementById('passcodeError').classList.add('visible');
+        resetSteps();
+        document.getElementById('statusPanel').classList.remove('visible');
+        return;
+      }
+
+      if (!res.ok) {
+        const txt = await res.text().catch(() => res.statusText);
+        setBuildBtn(false);
+        updateSteps('failed');
+        showError(txt || 'Server error: ' + res.status);
+        return;
+      }
+
+      const data = await res.json();
+      const buildId = data.buildId || data.build_id;
+
+      if (!buildId) {
+        setBuildBtn(false);
+        updateSteps('failed');
+        showError('No build ID returned from server.');
+        return;
+      }
+
+      pollTimer = setInterval(() => pollBuild(buildId), 5000);
+      pollBuild(buildId);
+
+    } catch (err) {
+      setBuildBtn(false);
+      updateSteps('failed');
+      showError(err.message || 'Network error — please check your connection.');
+    }
+  }
+</script>
+</body>
+</html>
