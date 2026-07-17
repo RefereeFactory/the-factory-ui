@@ -3,645 +3,268 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Factory — AI App Builder</title>
+<title>The Factory 🏭</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #0d0d0d;
-    --surface: #141414;
-    --surface2: #1a1a1a;
-    --border: #2a2a2a;
-    --amber: #f5a623;
-    --amber-dark: #c4831a;
-    --amber-glow: rgba(245,166,35,0.15);
-    --text: #e8e8e8;
-    --text-muted: #777;
-    --red: #e05252;
-    --green: #4caf82;
-  }
-
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0d0d0f;
+    background-image: radial-gradient(circle at 20% 10%, rgba(240,165,0,0.06), transparent 40%);
+    color: #eee;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 20px 80px;
+    padding: 40px 16px;
   }
-
-  .container {
-    width: 100%;
-    max-width: 640px;
-  }
-
-  /* Header */
-  .header {
-    text-align: center;
-    margin-bottom: 40px;
-  }
-
-  .logo {
-    font-size: 56px;
-    display: block;
-    margin-bottom: 12px;
-    filter: drop-shadow(0 0 20px rgba(245,166,35,0.4));
-  }
-
-  .title {
-    font-size: clamp(28px, 6vw, 42px);
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    color: var(--amber);
-    text-shadow: 0 0 40px rgba(245,166,35,0.3);
-  }
-
-  .tagline {
-    margin-top: 8px;
-    font-size: 14px;
-    color: var(--text-muted);
-    letter-spacing: 0.05em;
-    font-weight: 400;
-  }
-
-  /* Form card */
+  .wrap { width: 100%; max-width: 640px; }
+  header { text-align: center; margin-bottom: 36px; }
+  .logo { font-size: 44px; }
+  h1 { font-size: 30px; letter-spacing: 4px; font-weight: 800; margin-top: 6px; }
+  h1 span { color: #f0a500; }
+  .tagline { color: #888; font-size: 14px; letter-spacing: 1.5px; margin-top: 6px; }
   .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 32px;
-    margin-bottom: 24px;
-  }
-
-  .field {
-    margin-bottom: 22px;
-  }
-
-  label {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 8px;
-  }
-
-  input[type=text], input[type=password], textarea {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-size: 15px;
-    padding: 12px 14px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    font-family: inherit;
-    resize: vertical;
-  }
-
-  input[type=text]::placeholder, input[type=password]::placeholder, textarea::placeholder {
-    color: #444;
-  }
-
-  input[type=text]:focus, input[type=password]:focus, textarea:focus {
-    border-color: var(--amber);
-    box-shadow: 0 0 0 3px var(--amber-glow);
-  }
-
-  .field-hint {
-    margin-top: 5px;
-    font-size: 11px;
-    color: #555;
-  }
-
-  .error-inline {
-    margin-top: 5px;
-    font-size: 12px;
-    color: var(--red);
-    display: none;
-  }
-
-  .error-inline.visible {
-    display: block;
-  }
-
-  .build-btn {
-    width: 100%;
-    padding: 16px;
-    background: linear-gradient(135deg, var(--amber), var(--amber-dark));
-    color: #0d0d0d;
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
-    box-shadow: 0 4px 20px rgba(245,166,35,0.25);
-    margin-top: 8px;
-  }
-
-  .build-btn:hover:not(:disabled) {
-    opacity: 0.92;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 28px rgba(245,166,35,0.35);
-  }
-
-  .build-btn:active:not(:disabled) {
-    transform: translateY(0);
-  }
-
-  .build-btn:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  /* Status panel */
-  .status-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px 32px;
-    display: none;
-  }
-
-  .status-panel.visible {
-    display: block;
-  }
-
-  .status-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-muted);
+    background: #16161a;
+    border: 1px solid #26262c;
+    border-radius: 16px;
+    padding: 28px;
     margin-bottom: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
   }
-
-  .steps {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    margin-bottom: 28px;
-  }
-
-  .step {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    position: relative;
-  }
-
-  .step:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    top: 14px;
-    left: calc(50% + 14px);
-    right: calc(-50% + 14px);
-    height: 2px;
-    background: var(--border);
-    transition: background 0.4s;
-  }
-
-  .step.done:not(:last-child)::after {
-    background: var(--amber);
-  }
-
-  .step-dot {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid var(--border);
-    background: var(--surface2);
+  .hidden { display: none !important; }
+  .g-btn {
+    width: 100%;
+    padding: 14px;
+    background: #fff;
+    color: #1f1f1f;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    transition: all 0.4s;
-    position: relative;
-    z-index: 1;
+    gap: 10px;
+    transition: transform 0.15s;
   }
-
-  .step.done .step-dot {
-    background: var(--amber);
-    border-color: var(--amber);
-    color: #0d0d0d;
-  }
-
-  .step.active .step-dot {
-    border-color: var(--amber);
-    background: var(--amber-glow);
-    color: var(--amber);
-    animation: pulse-dot 1.4s ease-in-out infinite;
-  }
-
-  .step.failed .step-dot {
-    border-color: var(--red);
-    background: rgba(224,82,82,0.1);
-    color: var(--red);
-  }
-
-  @keyframes pulse-dot {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.5); }
-    50% { box-shadow: 0 0 0 6px rgba(245,166,35,0); }
-  }
-
-  .step-name {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    text-align: center;
-    transition: color 0.4s;
-  }
-
-  .step.done .step-name,
-  .step.active .step-name {
-    color: var(--amber);
-  }
-
-  .step.failed .step-name {
-    color: var(--red);
-  }
-
-  /* Result states */
-  .result-success {
-    display: none;
-    text-align: center;
-    padding-top: 4px;
-  }
-
-  .result-success.visible {
-    display: block;
-  }
-
-  .celebration {
-    font-size: 32px;
-    margin-bottom: 10px;
-  }
-
-  .result-message {
+  .g-btn:hover { transform: translateY(-1px); }
+  .signin-note { text-align: center; color: #777; font-size: 13px; margin-top: 14px; line-height: 1.6; }
+  .userbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; font-size: 13px; color: #999; }
+  .signout { background: none; border: 1px solid #333; color: #999; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 12px; }
+  .signout:hover { border-color: #f0a500; color: #f0a500; }
+  label { display: block; font-size: 12px; letter-spacing: 1.5px; color: #999; margin: 16px 0 8px; text-transform: uppercase; }
+  input, textarea {
+    width: 100%;
+    background: #0d0d0f;
+    border: 1.5px solid #2c2c33;
+    border-radius: 10px;
+    color: #eee;
+    padding: 13px 15px;
     font-size: 15px;
-    color: var(--green);
-    font-weight: 600;
-    margin-bottom: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border 0.2s;
   }
-
-  .live-link {
-    display: inline-block;
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--amber);
-    text-decoration: none;
-    word-break: break-all;
-    padding: 10px 16px;
-    border: 1px solid var(--amber);
-    border-radius: 8px;
-    transition: background 0.2s;
-  }
-
-  .live-link:hover {
-    background: var(--amber-glow);
-  }
-
-  .result-error {
-    display: none;
-    text-align: center;
-    padding-top: 4px;
-  }
-
-  .result-error.visible {
-    display: block;
-  }
-
-  .error-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--red);
-    margin-bottom: 8px;
-  }
-
-  .error-body {
-    font-size: 13px;
-    color: #aa4444;
-    margin-bottom: 18px;
-    word-break: break-word;
-  }
-
-  .try-again-btn {
-    padding: 10px 24px;
-    background: transparent;
-    border: 1px solid var(--red);
-    border-radius: 8px;
-    color: var(--red);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  input:focus, textarea:focus { border-color: #f0a500; }
+  .hint { font-size: 12px; color: #666; margin-top: 6px; }
+  .build-btn {
+    width: 100%;
+    margin-top: 22px;
+    padding: 16px;
+    background: linear-gradient(135deg, #f0a500, #d48800);
+    color: #111;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 2px;
     cursor: pointer;
-    transition: background 0.2s;
+    box-shadow: 0 0 24px rgba(240,165,0,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
   }
-
-  .try-again-btn:hover {
-    background: rgba(224,82,82,0.08);
+  .build-btn:hover { transform: translateY(-2px); box-shadow: 0 0 34px rgba(240,165,0,0.5); }
+  .build-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .steps { display: flex; justify-content: space-between; margin: 10px 0 18px; }
+  .step { text-align: center; flex: 1; position: relative; }
+  .step:not(:last-child)::after {
+    content: ''; position: absolute; top: 15px; left: 60%; width: 80%; height: 2px; background: #2c2c33;
   }
-
-  /* Grid lines decorative bg */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(245,166,35,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(245,166,35,0.03) 1px, transparent 1px);
-    background-size: 48px 48px;
-    pointer-events: none;
-    z-index: 0;
+  .dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #1c1c22; border: 2px solid #2c2c33;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 8px; font-size: 13px; color: #777; font-weight: 700;
+    position: relative; z-index: 1;
   }
-
-  .container { position: relative; z-index: 1; }
-
-  @media (max-width: 480px) {
-    .card, .status-panel { padding: 22px 18px; }
-    .step-name { font-size: 9px; }
+  .step.active .dot { border-color: #f0a500; color: #f0a500; animation: pulse 1.4s infinite; }
+  .step.done .dot { background: #f0a500; border-color: #f0a500; color: #111; }
+  .step-label { font-size: 11px; letter-spacing: 1px; color: #777; text-transform: uppercase; }
+  .step.active .step-label { color: #f0a500; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(240,165,0,0.4);} 50% { box-shadow: 0 0 0 8px rgba(240,165,0,0);} }
+  .result { text-align: center; padding: 10px 0; }
+  .result a {
+    color: #f0a500; font-size: 18px; font-weight: 700; word-break: break-all;
   }
+  .celebrate { font-size: 30px; margin-bottom: 8px; }
+  .error-box { color: #ff6b6b; text-align: center; font-size: 14px; line-height: 1.6; padding: 8px 0; }
+  .retry { margin-top: 12px; background: none; border: 1.5px solid #ff6b6b; color: #ff6b6b; border-radius: 10px; padding: 10px 24px; cursor: pointer; font-weight: 700; }
+  footer { color: #555; font-size: 12px; margin-top: 26px; text-align: center; line-height: 1.8; }
 </style>
 </head>
 <body>
-<div class="container">
-  <header class="header">
-    <span class="logo">🏭</span>
-    <div class="title">THE FACTORY</div>
-    <div class="tagline">Describe it. Own it. Live in minutes.</div>
+<div class="wrap">
+  <header>
+    <div class="logo">🏭</div>
+    <h1>THE <span>FACTORY</span></h1>
+    <div class="tagline">DESCRIBE IT. OWN IT. LIVE IN MINUTES.</div>
   </header>
 
-  <div class="card">
-    <div class="field">
-      <label for="appName">App Name</label>
-      <input type="text" id="appName" placeholder="my-awesome-app" autocomplete="off" spellcheck="false">
-      <div class="field-hint">Use lowercase letters and hyphens only</div>
+  <!-- SIGN IN -->
+  <div class="card" id="signinCard">
+    <button class="g-btn" onclick="signIn()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.6 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C41.4 34.9 44 29.9 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="signin-note">Sign in to start building. Your apps, your account, your ownership.</div>
+  </div>
+
+  <!-- BUILD -->
+  <div class="card hidden" id="buildCard">
+    <div class="userbar">
+      <span id="userEmail"></span>
+      <button class="signout" onclick="signOut()">Sign out</button>
     </div>
-    <div class="field">
-      <label for="description">Describe Your App</label>
-      <textarea id="description" rows="4" placeholder="A task management app with drag-and-drop boards, dark mode, and real-time collaboration..."></textarea>
-    </div>
-    <div class="field">
-      <label for="passcode">Passcode</label>
-      <input type="password" id="passcode" placeholder="••••••••">
-      <div class="error-inline" id="passcodeError">Invalid passcode — try again.</div>
-    </div>
+    <label>App Name</label>
+    <input id="appName" placeholder="my-business-site" />
+    <div class="hint">Lowercase letters and hyphens work best — we'll tidy it if needed.</div>
+    <label>Describe Your App</label>
+    <textarea id="appDesc" rows="4" placeholder="A booking page for my barbershop in London. Dark style, show services and prices, opening hours, and a booking form..."></textarea>
     <button class="build-btn" id="buildBtn" onclick="startBuild()">⚙ BUILD</button>
   </div>
 
-  <div class="status-panel" id="statusPanel">
-    <div class="status-label">Build Status</div>
+  <!-- STATUS -->
+  <div class="card hidden" id="statusCard">
     <div class="steps">
-      <div class="step" id="step-queued">
-        <div class="step-dot" id="dot-queued">1</div>
-        <div class="step-name">Queued</div>
-      </div>
-      <div class="step" id="step-building">
-        <div class="step-dot" id="dot-building">2</div>
-        <div class="step-name">Building</div>
-      </div>
-      <div class="step" id="step-deploying">
-        <div class="step-dot" id="dot-deploying">3</div>
-        <div class="step-name">Deploying</div>
-      </div>
-      <div class="step" id="step-live">
-        <div class="step-dot" id="dot-live">4</div>
-        <div class="step-name">Live</div>
-      </div>
+      <div class="step" id="s1"><div class="dot">1</div><div class="step-label">Queued</div></div>
+      <div class="step" id="s2"><div class="dot">2</div><div class="step-label">Building</div></div>
+      <div class="step" id="s3"><div class="dot">3</div><div class="step-label">Deploying</div></div>
+      <div class="step" id="s4"><div class="dot">4</div><div class="step-label">Live</div></div>
     </div>
-
-    <div class="result-success" id="resultSuccess">
-      <div class="celebration">🎉</div>
-      <div class="result-message">Your app is live and ready!</div>
-      <a class="live-link" id="liveLink" href="#" target="_blank" rel="noopener">Loading URL...</a>
+    <div class="result hidden" id="resultBox">
+      <div class="celebrate">🎉</div>
+      <div style="margin-bottom:10px;color:#aaa;">Your app is live:</div>
+      <a id="siteLink" href="#" target="_blank"></a>
     </div>
-
-    <div class="result-error" id="resultError">
-      <div class="error-title">Build Failed</div>
-      <div class="error-body" id="errorBody">An unknown error occurred.</div>
-      <button class="try-again-btn" onclick="resetForm()">Try Again</button>
+    <div class="error-box hidden" id="errorBox">
+      <div id="errorText"></div>
+      <button class="retry" onclick="resetToForm()">Try again</button>
     </div>
   </div>
+
+  <footer>Built with The Factory 🏭 · You own everything we build for you.</footer>
 </div>
 
 <script>
-  const API_BASE = 'https://canvbkibjgcnqowjtarf.supabase.co/functions/v1/swift-worker';
-  const AUTH = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbnZia2liamdjbnFvd2p0YXJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NzE0NDYsImV4cCI6MjA5OTM0NzQ0Nn0.TLskVoTaYI90avy09IuM_kkKvAYUMETTntZkn2M807I';
+  const SB_URL = 'https://canvbkibjgcnqowjtarf.supabase.co';
+  const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbnZia2liamdjbnFvd2p0YXJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NzE0NDYsImV4cCI6MjA5OTM0NzQ0Nn0.TLskVoTaYI90avy09IuM_kkKvAYUMETTntZkn2M807I';
+  const WORKER = SB_URL + '/functions/v1/swift-worker';
+  const sb = supabase.createClient(SB_URL, SB_ANON);
 
+  let session = null;
   let pollTimer = null;
 
-  const stepOrder = ['queued', 'building', 'deploying', 'live'];
-  const statusMap = {
-    pending: 'queued',
-    building: 'building',
-    deploying: 'deploying',
-    done: 'live',
-    failed: 'failed'
-  };
+  sb.auth.onAuthStateChange((_event, s) => { session = s; render(); });
+  sb.auth.getSession().then(({ data }) => { session = data.session; render(); });
 
-  function setStepState(targetStep, state) {
-    // state: 'none' | 'done' | 'active' | 'failed'
-    const el = document.getElementById('step-' + targetStep);
-    if (!el) return;
-    el.classList.remove('done', 'active', 'failed');
-    if (state !== 'none') el.classList.add(state);
+  function render() {
+    const signedIn = !!session;
+    document.getElementById('signinCard').classList.toggle('hidden', signedIn);
+    document.getElementById('buildCard').classList.toggle('hidden', !signedIn);
+    if (signedIn) document.getElementById('userEmail').textContent = session.user.email;
   }
 
-  function updateSteps(currentStatus) {
-    // currentStatus: 'queued' | 'building' | 'deploying' | 'live' | 'failed'
-    if (currentStatus === 'failed') {
-      // Mark all as none, show where it stopped — we don't know which step failed
-      // Just leave whatever was active and add failed to last active
-      const dots = document.querySelectorAll('.step');
-      dots.forEach(d => {
-        if (d.classList.contains('active')) {
-          d.classList.remove('active');
-          d.classList.add('failed');
-        }
-      });
-      return;
-    }
-
-    const currentIndex = stepOrder.indexOf(currentStatus);
-    stepOrder.forEach((step, i) => {
-      if (i < currentIndex) setStepState(step, 'done');
-      else if (i === currentIndex) setStepState(step, currentStatus === 'live' ? 'done' : 'active');
-      else setStepState(step, 'none');
-    });
+  async function signIn() {
+    await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
   }
 
-  function showStatus() {
-    document.getElementById('statusPanel').classList.add('visible');
+  async function signOut() {
+    await sb.auth.signOut();
+    document.getElementById('statusCard').classList.add('hidden');
   }
 
-  function showSuccess(url) {
-    document.getElementById('resultSuccess').classList.add('visible');
-    const link = document.getElementById('liveLink');
-    link.href = url;
-    link.textContent = url;
-  }
-
-  function showError(msg) {
-    document.getElementById('resultError').classList.add('visible');
-    document.getElementById('errorBody').textContent = msg || 'An unknown error occurred.';
-  }
-
-  function setBuildBtn(disabled) {
-    document.getElementById('buildBtn').disabled = disabled;
-  }
-
-  function resetSteps() {
-    stepOrder.forEach(s => setStepState(s, 'none'));
-    document.getElementById('resultSuccess').classList.remove('visible');
-    document.getElementById('resultError').classList.remove('visible');
-  }
-
-  function resetForm() {
-    if (pollTimer) clearInterval(pollTimer);
-    pollTimer = null;
-    setBuildBtn(false);
-    document.getElementById('statusPanel').classList.remove('visible');
-    resetSteps();
-    document.getElementById('passcodeError').classList.remove('visible');
-  }
-
-  function stopPolling() {
-    if (pollTimer) {
-      clearInterval(pollTimer);
-      pollTimer = null;
-    }
-  }
-
-  async function pollBuild(buildId) {
-    try {
-      const res = await fetch(API_BASE + '?buildId=' + encodeURIComponent(buildId), {
-        method: 'GET',
-        headers: { 'Authorization': AUTH }
-      });
-
-      if (res.status === 401) {
-        stopPolling();
-        setBuildBtn(false);
-        document.getElementById('passcodeError').textContent = 'Invalid passcode — try again.';
-        document.getElementById('passcodeError').classList.add('visible');
-        resetSteps();
-        document.getElementById('statusPanel').classList.remove('visible');
-        return;
-      }
-
-      if (!res.ok) {
-        const txt = await res.text().catch(() => res.statusText);
-        stopPolling();
-        setBuildBtn(false);
-        updateSteps('failed');
-        showError(txt || 'Server error: ' + res.status);
-        return;
-      }
-
-      const data = await res.json();
-      const rawStatus = (data.status || '').toLowerCase();
-      const mappedStatus = statusMap[rawStatus] || 'queued';
-
-      updateSteps(mappedStatus);
-
-      if (rawStatus === 'done') {
-        stopPolling();
-        setBuildBtn(false);
-        showSuccess(data.site_url || '#');
-      } else if (rawStatus === 'failed') {
-        stopPolling();
-        setBuildBtn(false);
-        showError(data.error || data.message || 'The build encountered an error.');
-      }
-    } catch (err) {
-      // Network error — keep polling, don't crash
-      console.warn('Poll error:', err);
+  function setStep(n, failed) {
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById('s' + i);
+      el.classList.remove('active', 'done');
+      if (i < n) el.classList.add('done');
+      if (i === n && !failed) el.classList.add(n === 4 ? 'done' : 'active');
     }
   }
 
   async function startBuild() {
-    const repoName = document.getElementById('appName').value.trim();
-    const description = document.getElementById('description').value.trim();
-    const passcode = document.getElementById('passcode').value;
+    const name = document.getElementById('appName').value.trim();
+    const desc = document.getElementById('appDesc').value.trim();
+    if (!name || !desc) { alert('Give your app a name and a description.'); return; }
 
-    document.getElementById('passcodeError').classList.remove('visible');
-
-    if (!repoName) {
-      document.getElementById('appName').focus();
-      return;
-    }
-    if (!description) {
-      document.getElementById('description').focus();
-      return;
-    }
-    if (!passcode) {
-      document.getElementById('passcode').focus();
-      return;
-    }
-
-    setBuildBtn(true);
-    resetSteps();
-    showStatus();
-    updateSteps('queued');
+    document.getElementById('buildBtn').disabled = true;
+    document.getElementById('statusCard').classList.remove('hidden');
+    document.getElementById('resultBox').classList.add('hidden');
+    document.getElementById('errorBox').classList.add('hidden');
+    setStep(1);
 
     try {
-      const res = await fetch(API_BASE, {
+      const res = await fetch(WORKER, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': AUTH
+          'Authorization': 'Bearer ' + session.access_token
         },
-        body: JSON.stringify({ repoName, description, passcode })
+        body: JSON.stringify({ repoName: name, description: desc })
       });
-
-      if (res.status === 401) {
-        setBuildBtn(false);
-        document.getElementById('passcodeError').textContent = 'Invalid passcode — try again.';
-        document.getElementById('passcodeError').classList.add('visible');
-        resetSteps();
-        document.getElementById('statusPanel').classList.remove('visible');
-        return;
-      }
-
-      if (!res.ok) {
-        const txt = await res.text().catch(() => res.statusText);
-        setBuildBtn(false);
-        updateSteps('failed');
-        showError(txt || 'Server error: ' + res.status);
-        return;
-      }
-
       const data = await res.json();
-      const buildId = data.buildId || data.build_id;
-
-      if (!buildId) {
-        setBuildBtn(false);
-        updateSteps('failed');
-        showError('No build ID returned from server.');
-        return;
-      }
-
-      pollTimer = setInterval(() => pollBuild(buildId), 5000);
-      pollBuild(buildId);
-
-    } catch (err) {
-      setBuildBtn(false);
-      updateSteps('failed');
-      showError(err.message || 'Network error — please check your connection.');
+      if (!res.ok || !data.buildId) throw new Error(data.error || 'Could not start build');
+      poll(data.buildId);
+    } catch (e) {
+      showError(e.message);
     }
+  }
+
+  function poll(buildId) {
+    pollTimer = setInterval(async () => {
+      try {
+        const res = await fetch(WORKER + '?buildId=' + buildId, {
+          headers: { 'Authorization': 'Bearer ' + session.access_token }
+        });
+        const b = await res.json();
+        if (b.status === 'pending') setStep(1);
+        else if (b.status === 'building') setStep(2);
+        else if (b.status === 'deploying') setStep(3);
+        else if (b.status === 'done') {
+          setStep(4);
+          clearInterval(pollTimer);
+          const link = document.getElementById('siteLink');
+          link.href = b.site_url; link.textContent = b.site_url;
+          document.getElementById('resultBox').classList.remove('hidden');
+          document.getElementById('buildBtn').disabled = false;
+        } else if (b.status === 'failed') {
+          clearInterval(pollTimer);
+          showError(b.error || 'Build failed');
+        }
+      } catch (_) { /* transient poll error — keep polling */ }
+    }, 5000);
+  }
+
+  function showError(msg) {
+    setStep(0, true);
+    document.getElementById('errorText').textContent = msg;
+    document.getElementById('errorBox').classList.remove('hidden');
+    document.getElementById('buildBtn').disabled = false;
+  }
+
+  function resetToForm() {
+    document.getElementById('statusCard').classList.add('hidden');
   }
 </script>
 </body>
