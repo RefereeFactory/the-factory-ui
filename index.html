@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Factory 🏭</title>
+<title>The Factory 🏭 — a Referee Innovations company</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,10 +20,12 @@
   }
   .wrap { width: 100%; max-width: 640px; }
   header { text-align: center; margin-bottom: 36px; }
+  .eyebrow { font-size: 12px; letter-spacing: 5px; color: #999; text-transform: uppercase; margin-bottom: 12px; }
   .logo { font-size: 44px; }
   h1 { font-size: 30px; letter-spacing: 4px; font-weight: 800; margin-top: 6px; }
   h1 span { color: #f0a500; }
   .tagline { color: #888; font-size: 14px; letter-spacing: 1.5px; margin-top: 6px; }
+  .defline { color: #bbb; font-size: 14.5px; margin-top: 14px; line-height: 1.7; max-width: 520px; margin-left: auto; margin-right: auto; }
   .card {
     background: #16161a;
     border: 1px solid #26262c;
@@ -43,99 +45,80 @@
     font-size: 14px;
     text-align: center;
   }
-  .g-btn {
-    width: 100%;
-    padding: 14px;
-    background: #fff;
-    color: #1f1f1f;
-    border: none;
-    border-radius: 10px;
-    font-size: 15px;
+  .inbox-banner {
+    background: #2b2107;
+    border: 1px solid #f0a500;
+    color: #f0a500;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    text-align: center;
     font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+  }
+  .g-btn {
+    width: 100%; padding: 14px; background: #fff; color: #1f1f1f; border: none; border-radius: 10px;
+    font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
   }
   .signin-note { text-align: center; color: #777; font-size: 13px; margin-top: 14px; line-height: 1.6; }
   .userbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; font-size: 13px; color: #999; flex-wrap: wrap; gap: 8px; }
-  .credits {
-    background: #0d0d0f;
-    border: 1px solid #f0a500;
-    color: #f0a500;
-    border-radius: 20px;
-    padding: 5px 14px;
-    font-weight: 700;
-    font-size: 13px;
-  }
+  .credits { background: #0d0d0f; border: 1px solid #f0a500; color: #f0a500; border-radius: 20px; padding: 5px 14px; font-weight: 700; font-size: 13px; }
   .signout { background: none; border: 1px solid #333; color: #999; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 12px; }
   label { display: block; font-size: 12px; letter-spacing: 1.5px; color: #999; margin: 16px 0 8px; text-transform: uppercase; }
   input, textarea {
-    width: 100%;
-    background: #0d0d0f;
-    border: 1.5px solid #2c2c33;
-    border-radius: 10px;
-    color: #eee;
-    padding: 13px 15px;
-    font-size: 15px;
-    font-family: inherit;
-    outline: none;
+    width: 100%; background: #0d0d0f; border: 1.5px solid #2c2c33; border-radius: 10px;
+    color: #eee; padding: 13px 15px; font-size: 15px; font-family: inherit; outline: none;
   }
   input:focus, textarea:focus { border-color: #f0a500; }
   .hint { font-size: 12px; color: #666; margin-top: 6px; }
   .build-btn {
-    width: 100%;
-    margin-top: 22px;
-    padding: 16px;
+    width: 100%; margin-top: 22px; padding: 16px;
     background: linear-gradient(135deg, #f0a500, #d48800);
-    color: #111;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    cursor: pointer;
+    color: #111; border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 800; letter-spacing: 2px; cursor: pointer;
     box-shadow: 0 0 24px rgba(240,165,0,0.35);
   }
   .build-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .upgrade-title { font-size: 17px; font-weight: 800; margin-bottom: 6px; color: #f0a500; }
-  .upgrade-sub { font-size: 13px; color: #999; margin-bottom: 18px; line-height: 1.6; }
-  .plan-row { display: flex; gap: 12px; flex-wrap: wrap; }
-  .plan {
-    flex: 1;
-    min-width: 220px;
-    background: #0d0d0f;
-    border: 1.5px solid #2c2c33;
-    border-radius: 12px;
-    padding: 18px;
+  .small-btn {
+    margin-top: 16px; padding: 13px 26px;
+    background: linear-gradient(135deg, #f0a500, #d48800);
+    color: #111; border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 800; cursor: pointer;
   }
+  .small-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .form-ok { color: #7ee2a8; font-size: 14px; margin-top: 14px; }
+  .section-title { font-size: 17px; font-weight: 800; margin-bottom: 6px; color: #f0a500; }
+  .section-sub { font-size: 13.5px; color: #999; margin-bottom: 12px; line-height: 1.7; }
+  .plan-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .plan { flex: 1; min-width: 220px; background: #0d0d0f; border: 1.5px solid #2c2c33; border-radius: 12px; padding: 18px; }
   .plan.best { border-color: #f0a500; }
   .plan .p-name { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
   .plan .p-price { font-size: 22px; font-weight: 800; color: #f0a500; margin-bottom: 6px; }
   .plan .p-desc { font-size: 12.5px; color: #888; margin-bottom: 14px; line-height: 1.5; }
-  .plan button {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    font-weight: 800;
-    cursor: pointer;
-    font-size: 14px;
-  }
+  .plan button { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 14px; }
   .plan.best button { background: linear-gradient(135deg, #f0a500, #d48800); color: #111; }
   .plan:not(.best) button { background: #26262c; color: #eee; }
+  .empty-state { border: 1.5px dashed #2c2c33; border-radius: 12px; padding: 24px; text-align: center; color: #777; font-size: 13.5px; line-height: 1.7; }
+  .enquiry {
+    background: #0d0d0f; border: 1px solid #2c2c33; border-radius: 12px;
+    padding: 16px; margin-bottom: 12px;
+  }
+  .enquiry .e-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .enquiry .e-who { font-size: 13.5px; color: #ddd; font-weight: 700; }
+  .kind-tag { font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; border-radius: 12px; padding: 3px 10px; font-weight: 800; }
+  .kind-enquiry { background: #10321a; color: #7ee2a8; border: 1px solid #28a745; }
+  .kind-candidate { background: #1a2440; color: #8ab4ff; border: 1px solid #4a6fd4; }
+  .enquiry .e-msg { font-size: 13.5px; color: #bbb; line-height: 1.65; margin-bottom: 10px; white-space: pre-wrap; }
+  .enquiry .e-meta { font-size: 11.5px; color: #666; margin-bottom: 10px; }
+  .mark-read { background: none; border: 1px solid #f0a500; color: #f0a500; border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 12px; font-weight: 700; }
   .steps { display: flex; justify-content: space-between; margin: 10px 0 18px; }
   .step { text-align: center; flex: 1; position: relative; }
-  .step:not(:last-child)::after {
-    content: ''; position: absolute; top: 15px; left: 60%; width: 80%; height: 2px; background: #2c2c33;
-  }
+  .step:not(:last-child)::after { content: ''; position: absolute; top: 15px; left: 60%; width: 80%; height: 2px; background: #2c2c33; }
   .dot {
     width: 32px; height: 32px; border-radius: 50%;
     background: #1c1c22; border: 2px solid #2c2c33;
     display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 8px; font-size: 13px; color: #777; font-weight: 700;
-    position: relative; z-index: 1;
+    margin: 0 auto 8px; font-size: 13px; color: #777; font-weight: 700; position: relative; z-index: 1;
   }
   .step.active .dot { border-color: #f0a500; color: #f0a500; animation: pulse 1.4s infinite; }
   .step.done .dot { background: #f0a500; border-color: #f0a500; color: #111; }
@@ -148,17 +131,21 @@
   .error-box { color: #ff6b6b; text-align: center; font-size: 14px; line-height: 1.6; padding: 8px 0; }
   .retry { margin-top: 12px; background: none; border: 1.5px solid #ff6b6b; color: #ff6b6b; border-radius: 10px; padding: 10px 24px; cursor: pointer; font-weight: 700; }
   footer { color: #555; font-size: 12px; margin-top: 26px; text-align: center; line-height: 1.8; }
+  footer a { color: #777; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
+    <div class="eyebrow">Referee Innovations</div>
     <div class="logo">🏭</div>
     <h1>THE <span>FACTORY</span></h1>
     <div class="tagline">DESCRIBE IT. OWN IT. LIVE IN MINUTES.</div>
+    <div class="defline">AI-generated websites and web apps for businesses of every size — from instant builds to large projects personally reviewed by our founders.</div>
   </header>
 
   <div class="banner hidden" id="payBanner">🎉 Payment received — your builds are being credited. Thank you!</div>
+  <div class="inbox-banner hidden" id="inboxBanner"></div>
 
   <div class="card" id="signinCard">
     <button class="g-btn" onclick="signIn()">
@@ -166,6 +153,13 @@
       Sign in with Google
     </button>
     <div class="signin-note">Sign in to start building. 3 free builds on us — your apps, your ownership.</div>
+  </div>
+
+  <div class="card hidden" id="founderCard">
+    <div class="section-title">📬 Founder Inbox</div>
+    <div class="section-sub">Visible to you alone. New messages from both doors — enquiries and candidates.</div>
+    <div id="inboxList"></div>
+    <div class="empty-state hidden" id="inboxEmpty">All read. Nothing new.</div>
   </div>
 
   <div class="card hidden" id="buildCard">
@@ -183,8 +177,8 @@
   </div>
 
   <div class="card hidden" id="upgradeCard">
-    <div class="upgrade-title">Keep building</div>
-    <div class="upgrade-sub">You own everything The Factory makes for you. Choose how you want to keep creating:</div>
+    <div class="section-title">Keep building</div>
+    <div class="section-sub">You own everything The Factory makes for you. Choose how you want to keep creating:</div>
     <div class="plan-row">
       <div class="plan best">
         <div class="p-name">Factory Pro</div>
@@ -219,7 +213,43 @@
     </div>
   </div>
 
-  <footer>Built with The Factory 🏭 · You own everything we build for you.</footer>
+  <div class="card">
+    <div class="section-title">About The Factory</div>
+    <div class="section-sub">The Factory is one innovation from <strong>Referee Innovations</strong> — a solutions consultancy for the creative industries, built on mathematics and science. We create AI-generated websites and web apps for businesses large and small. Larger projects can be directed to our founders for manual analysis and a quotation, to find the solution that optimises your business.</div>
+    <div class="section-title" style="font-size:15px;margin-top:20px;">Reach us here</div>
+    <label>Your Name</label>
+    <input id="rqName" placeholder="Jane Smith" />
+    <label>Your Email</label>
+    <input id="rqEmail" placeholder="jane@business.com" />
+    <label>Your Message</label>
+    <textarea id="rqMsg" rows="3" placeholder="Tell us about your project..."></textarea>
+    <button class="small-btn" id="rqBtn" onclick="submitMessage('enquiry','rqName','rqEmail','rqMsg','rqOk','rqBtn')">Send message</button>
+    <div class="form-ok hidden" id="rqOk">✓ Thank you — we aim to reply within one week.</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Work with us</div>
+    <div class="section-sub">Referee Innovations selects for one ability above all: <strong>problem-solving</strong>. Leave your details, and tell us about real problems you have solved — what was broken, what you did, what changed.</div>
+    <label>Your Name</label>
+    <input id="wuName" placeholder="Alex Morgan" />
+    <label>Your Email</label>
+    <input id="wuEmail" placeholder="alex@email.com" />
+    <label>Problems You Have Solved</label>
+    <textarea id="wuMsg" rows="4" placeholder="Real examples — the problem, your approach, the result..."></textarea>
+    <button class="small-btn" id="wuBtn" onclick="submitMessage('candidate','wuName','wuEmail','wuMsg','wuOk','wuBtn')">Apply</button>
+    <div class="form-ok hidden" id="wuOk">✓ Thank you — we aim to reply within one week.</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Updates &amp; Stories</div>
+    <div class="section-sub">Films from Referee Innovations: how we solve problems in the creative industries — with a special focus on The Factory itself.</div>
+    <div class="empty-state">🎬 Our first films are in production.<br>Check back soon — or build something while you wait.</div>
+  </div>
+
+  <footer>
+    Built with The Factory 🏭 · You own everything we build for you.<br>
+    The Factory is a <strong>Referee Innovations</strong> company · <a href="https://factory-love-between-nations.netlify.app" target="_blank">Our Manifesto</a>
+  </footer>
 </div>
 
 <script>
@@ -250,13 +280,77 @@
     if (si) {
       document.getElementById('userEmail').textContent = session.user.email;
       loadCredits();
+    } else {
+      document.getElementById('founderCard').classList.add('hidden');
+      document.getElementById('inboxBanner').classList.add('hidden');
     }
   }
 
   async function loadCredits() {
     if (!session) return;
-    const { data } = await sb.from('users').select('builds_remaining').eq('auth_id', session.user.id).single();
-    if (data) document.getElementById('creditsBadge').textContent = (data.builds_remaining ?? 0) + ' builds left';
+    const { data } = await sb.from('users').select('builds_remaining, is_founder').eq('auth_id', session.user.id).single();
+    if (data) {
+      document.getElementById('creditsBadge').textContent = (data.builds_remaining ?? 0) + ' builds left';
+      if (data.is_founder) loadInbox();
+    }
+  }
+
+  async function loadInbox() {
+    const { data } = await sb.from('enquiries').select('*').eq('seen', false).order('created_at', { ascending: false });
+    const card = document.getElementById('founderCard');
+    const list = document.getElementById('inboxList');
+    const empty = document.getElementById('inboxEmpty');
+    const bannerEl = document.getElementById('inboxBanner');
+    card.classList.remove('hidden');
+    list.innerHTML = '';
+    if (data && data.length > 0) {
+      bannerEl.textContent = '📬 ' + data.length + ' new message' + (data.length > 1 ? 's' : '') + ' in your Founder Inbox';
+      bannerEl.classList.remove('hidden');
+      empty.classList.add('hidden');
+      for (const e of data) {
+        const div = document.createElement('div');
+        div.className = 'enquiry';
+        const tagClass = e.kind === 'candidate' ? 'kind-candidate' : 'kind-enquiry';
+        const tagText = e.kind === 'candidate' ? 'Candidate' : 'Enquiry';
+        div.innerHTML =
+          '<div class="e-head"><span class="e-who"></span><span class="kind-tag ' + tagClass + '">' + tagText + '</span></div>' +
+          '<div class="e-meta"></div>' +
+          '<div class="e-msg"></div>' +
+          '<button class="mark-read">Mark as read</button>';
+        div.querySelector('.e-who').textContent = (e.name || 'Anonymous') + ' · ' + (e.email || 'no email');
+        div.querySelector('.e-meta').textContent = new Date(e.created_at).toLocaleString();
+        div.querySelector('.e-msg').textContent = e.message;
+        div.querySelector('.mark-read').onclick = () => markRead(e.id);
+        list.appendChild(div);
+      }
+    } else {
+      bannerEl.classList.add('hidden');
+      empty.classList.remove('hidden');
+    }
+  }
+
+  async function markRead(id) {
+    await sb.from('enquiries').update({ seen: true }).eq('id', id);
+    loadInbox();
+  }
+
+  async function submitMessage(kind, nameId, emailId, msgId, okId, btnId) {
+    const name = document.getElementById(nameId).value.trim();
+    const email = document.getElementById(emailId).value.trim();
+    const message = document.getElementById(msgId).value.trim();
+    if (!message || !email) { alert('Please add your email and a message.'); return; }
+    document.getElementById(btnId).disabled = true;
+    const { error } = await sb.from('enquiries').insert({ kind, name, email, message });
+    if (error) {
+      alert('Could not send — please try again.');
+      document.getElementById(btnId).disabled = false;
+      return;
+    }
+    document.getElementById(okId).classList.remove('hidden');
+    document.getElementById(nameId).value = '';
+    document.getElementById(emailId).value = '';
+    document.getElementById(msgId).value = '';
+    document.getElementById(btnId).disabled = false;
   }
 
   async function signIn() {
