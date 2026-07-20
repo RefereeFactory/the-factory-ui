@@ -130,6 +130,14 @@
   .celebrate { font-size: 30px; margin-bottom: 8px; }
   .error-box { color: #ff6b6b; text-align: center; font-size: 14px; line-height: 1.6; padding: 8px 0; }
   .retry { margin-top: 12px; background: none; border: 1.5px solid #ff6b6b; color: #ff6b6b; border-radius: 10px; padding: 10px 24px; cursor: pointer; font-weight: 700; }
+  .voice-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .mic-btn { background: #0d0d0f; border: 1.5px solid #f0a500; color: #f0a500; border-radius: 10px; padding: 11px 16px; font-weight: 700; font-size: 13.5px; cursor: pointer; min-height: 44px; }
+  .mic-btn.listening { background: #f0a500; color: #111; animation: pulse 1.4s infinite; }
+  .voice-toggle { display: flex; align-items: center; gap: 6px; color: #888; font-size: 12.5px; cursor: pointer; }
+  .voice-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .mic-btn { background: #0d0d0f; border: 1.5px solid #f0a500; color: #f0a500; border-radius: 10px; padding: 11px 16px; font-weight: 700; font-size: 13.5px; cursor: pointer; min-height: 44px; }
+  .mic-btn.listening { background: #f0a500; color: #111; animation: pulse 1.4s infinite; }
+  .voice-toggle { display: flex; align-items: center; gap: 6px; color: #888; font-size: 12.5px; cursor: pointer; }
   footer { color: #555; font-size: 12px; margin-top: 26px; text-align: center; line-height: 1.8; }
   footer a { color: #777; }
 </style>
@@ -173,6 +181,16 @@
     <div class="hint">Lowercase letters and hyphens work best — we'll tidy it if needed.</div>
     <label>Describe Your App</label>
     <textarea id="appDesc" rows="4" placeholder="A booking page for my barbershop in London. Dark style, show services and prices, opening hours, and a booking form..."></textarea>
+    <div class="voice-row">
+      <button type="button" class="mic-btn" id="micBtn" onclick="toggleMic()">🎤 Speak your idea</button>
+      <label class="voice-toggle"><input type="checkbox" id="voiceToggle" checked onchange="voicePref()"> Voice input</label>
+    </div>
+    <div class="hint hidden" id="micHint">Listening — speak naturally; tap again to stop.</div>
+    <div class="voice-row">
+      <button type="button" class="mic-btn" id="micBtn" onclick="toggleMic()">🎤 Speak your idea</button>
+      <label class="voice-toggle"><input type="checkbox" id="voiceToggle" checked onchange="voicePref()"> Voice input</label>
+    </div>
+    <div class="hint hidden" id="micHint">Listening — speak naturally; tap again to stop.</div>
     <button class="build-btn" id="buildBtn" onclick="startBuild()">⚙ BUILD</button>
   </div>
 
@@ -446,6 +464,128 @@
     document.getElementById('errorBox').classList.remove('hidden');
     document.getElementById('buildBtn').disabled = false;
   }
+
+  // ---- VOICE INPUT (the ears) ----
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null, listening = false;
+
+  function voicePref() {
+    const on = document.getElementById('voiceToggle').checked;
+    try { localStorage.setItem('factory_voice', on ? '1' : '0'); } catch(_){}
+    document.getElementById('micBtn').style.display = (on && !!SR) ? '' : 'none';
+    if (!on && listening) stopMic();
+  }
+
+  function initVoice() {
+    let on = true;
+    try { on = localStorage.getItem('factory_voice') !== '0'; } catch(_){}
+    document.getElementById('voiceToggle').checked = on;
+    if (!SR) {
+      document.getElementById('micBtn').style.display = 'none';
+      document.getElementById('micHint').textContent = 'Voice input is not supported in this browser — Chrome or Safari recommended.';
+    } else {
+      voicePref();
+    }
+  }
+
+  function toggleMic() { listening ? stopMic() : startMic(); }
+
+  function startMic() {
+    if (!SR) return;
+    rec = new SR();
+    rec.lang = 'en-GB';
+    rec.interimResults = false;
+    rec.continuous = true;
+    rec.onresult = (e) => {
+      let txt = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) txt += e.results[i][0].transcript;
+      }
+      if (txt) {
+        const box = document.getElementById('appDesc');
+        box.value = (box.value ? box.value.trim() + ' ' : '') + txt.trim();
+      }
+    };
+    rec.onend = () => { if (listening) { try { rec.start(); } catch(_) { stopMic(); } } };
+    rec.onerror = () => stopMic();
+    try { rec.start(); listening = true; } catch(_) { return; }
+    const b = document.getElementById('micBtn');
+    b.classList.add('listening');
+    b.textContent = '⏺ Listening — tap to stop';
+    document.getElementById('micHint').classList.remove('hidden');
+  }
+
+  function stopMic() {
+    listening = false;
+    try { if (rec) rec.stop(); } catch(_){}
+    const b = document.getElementById('micBtn');
+    b.classList.remove('listening');
+    b.textContent = '🎤 Speak your idea';
+    document.getElementById('micHint').classList.add('hidden');
+  }
+
+  initVoice();
+
+  // ---- VOICE INPUT (the ears) ----
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null, listening = false;
+
+  function voicePref() {
+    const on = document.getElementById('voiceToggle').checked;
+    try { localStorage.setItem('factory_voice', on ? '1' : '0'); } catch(_){}
+    document.getElementById('micBtn').style.display = (on && !!SR) ? '' : 'none';
+    if (!on && listening) stopMic();
+  }
+
+  function initVoice() {
+    let on = true;
+    try { on = localStorage.getItem('factory_voice') !== '0'; } catch(_){}
+    document.getElementById('voiceToggle').checked = on;
+    if (!SR) {
+      document.getElementById('micBtn').style.display = 'none';
+      document.getElementById('micHint').textContent = 'Voice input is not supported in this browser — Chrome or Safari recommended.';
+    } else {
+      voicePref();
+    }
+  }
+
+  function toggleMic() { listening ? stopMic() : startMic(); }
+
+  function startMic() {
+    if (!SR) return;
+    rec = new SR();
+    rec.lang = 'en-GB';
+    rec.interimResults = false;
+    rec.continuous = true;
+    rec.onresult = (e) => {
+      let txt = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) txt += e.results[i][0].transcript;
+      }
+      if (txt) {
+        const box = document.getElementById('appDesc');
+        box.value = (box.value ? box.value.trim() + ' ' : '') + txt.trim();
+      }
+    };
+    rec.onend = () => { if (listening) { try { rec.start(); } catch(_) { stopMic(); } } };
+    rec.onerror = () => stopMic();
+    try { rec.start(); listening = true; } catch(_) { return; }
+    const b = document.getElementById('micBtn');
+    b.classList.add('listening');
+    b.textContent = '⏺ Listening — tap to stop';
+    document.getElementById('micHint').classList.remove('hidden');
+  }
+
+  function stopMic() {
+    listening = false;
+    try { if (rec) rec.stop(); } catch(_){}
+    const b = document.getElementById('micBtn');
+    b.classList.remove('listening');
+    b.textContent = '🎤 Speak your idea';
+    document.getElementById('micHint').classList.add('hidden');
+  }
+
+  initVoice();
 
   function resetToForm() {
     document.getElementById('statusCard').classList.add('hidden');
