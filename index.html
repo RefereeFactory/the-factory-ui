@@ -130,6 +130,24 @@
   .celebrate { font-size: 30px; margin-bottom: 8px; }
   .error-box { color: #ff6b6b; text-align: center; font-size: 14px; line-height: 1.6; padding: 8px 0; }
   .retry { margin-top: 12px; background: none; border: 1.5px solid #ff6b6b; color: #ff6b6b; border-radius: 10px; padding: 10px 24px; cursor: pointer; font-weight: 700; }
+  .header-cta { margin-top: 22px; }
+  .terms-btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 11px 22px;
+    background: #16161a;
+    border: 1.5px solid #f0a500;
+    color: #f0a500;
+    border-radius: 999px;
+    font-size: 13.5px; font-weight: 800; letter-spacing: 1px;
+    text-decoration: none;
+    box-shadow: 0 0 18px rgba(240,165,0,0.18);
+  }
+  .header-cta { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .terms-btn:hover { background: #2b2107; }
+  .terms-btn .draft-tag {
+    background: #f0a500; color: #111; border-radius: 8px;
+    padding: 2px 8px; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase;
+  }
   footer { color: #555; font-size: 12px; margin-top: 26px; text-align: center; line-height: 1.8; }
   footer a { color: #777; }
 </style>
@@ -142,10 +160,31 @@
     <h1>THE <span>FACTORY</span></h1>
     <div class="tagline">DESCRIBE IT. OWN IT. LIVE IN MINUTES.</div>
     <div class="defline">AI-generated websites and web apps for businesses of every size — from instant builds to large projects personally reviewed by our founders.</div>
+    <div class="header-cta">
+      <a class="terms-btn" id="termsBtn" href="terms.html">📄 Terms of Service <span class="draft-tag">Draft</span></a>
+      <a class="terms-btn" id="govBtn" href="governance.html">⚖️ Open Governance</a>
+    </div>
   </header>
 
   <div class="banner hidden" id="payBanner">🎉 Payment received — your builds are being credited. Thank you!</div>
   <div class="inbox-banner hidden" id="inboxBanner"></div>
+
+  <div class="card hidden" id="govCard">
+    <div class="section-title">⚖️ Open Governance page</div>
+    <div class="section-sub">Visible to you alone. The page is always reachable — this decides what visitors see on it.</div>
+    <div class="userbar">
+      <span>Current state</span>
+      <span class="credits" id="govState">–</span>
+      <a class="signout" href="/governance" target="_blank" style="text-decoration:none;">View page</a>
+    </div>
+    <label>Where this work has reached</label>
+    <textarea id="govStatus" rows="3" placeholder="How far along the work is — visitors see this."></textarea>
+    <label>Message for would-be collaborators</label>
+    <textarea id="govNote" rows="3" placeholder="What you want collaborators to know. Leave empty to hide this section."></textarea>
+    <button class="small-btn" id="govSaveBtn" onclick="saveGovernance()">Save messages</button>
+    <button class="small-btn" id="govToggleBtn" onclick="toggleGovernance()" style="background:#26262c;color:#eee;margin-left:8px;">Release page</button>
+    <div class="form-ok hidden" id="govOk">✓ Saved.</div>
+  </div>
 
   <div class="card" id="signinCard">
     <button class="g-btn" onclick="signIn()">
@@ -291,7 +330,7 @@
     const { data } = await sb.from('users').select('builds_remaining, is_founder').eq('auth_id', session.user.id).single();
     if (data) {
       document.getElementById('creditsBadge').textContent = (data.builds_remaining ?? 0) + ' builds left';
-      if (data.is_founder) loadInbox();
+      if (data.is_founder) { loadInbox(); loadGovernance(); }
     }
   }
 
@@ -450,6 +489,60 @@
   function resetToForm() {
     document.getElementById('statusCard').classList.add('hidden');
   }
+
+  let govReleased = false;
+
+  async function loadGovernance() {
+    document.getElementById('govCard').classList.remove('hidden');
+    let data = null;
+    try {
+      const r = await sb.from('site_settings').select('value').eq('key', 'governance').single();
+      data = r.data;
+      if (r.error) console.warn('governance read:', r.error.message);
+    } catch (e) { console.warn('governance read threw:', e); }
+    const val = (data && data.value) || {};
+    govReleased = val.released === true;
+    document.getElementById('govStatus').value = val.status || '';
+    document.getElementById('govNote').value = val.note || '';
+    document.getElementById('govState').textContent = govReleased ? 'RELEASED' : 'HELD';
+    document.getElementById('govToggleBtn').textContent = govReleased ? 'Hold page' : 'Release page';
+    document.getElementById('govCard').classList.remove('hidden');
+  }
+
+  async function writeGovernance(released) {
+    const payload = {
+      released: released,
+      status: document.getElementById('govStatus').value.trim(),
+      note: document.getElementById('govNote').value.trim()
+    };
+    const { error } = await sb.from('site_settings')
+      .update({ value: payload, updated_at: new Date().toISOString() })
+      .eq('key', 'governance');
+    if (error) { alert('Could not save — ' + error.message); return false; }
+    const ok = document.getElementById('govOk');
+    ok.classList.remove('hidden');
+    setTimeout(() => ok.classList.add('hidden'), 2500);
+    return true;
+  }
+
+  async function saveGovernance() {
+    const btn = document.getElementById('govSaveBtn');
+    btn.disabled = true;
+    await writeGovernance(govReleased);
+    btn.disabled = false;
+    loadGovernance();
+  }
+
+  async function toggleGovernance() {
+    const next = !govReleased;
+    if (!confirm(next ? 'Release the Open Governance page to the public?' : 'Hold the page again — visitors will see your progress message instead.')) return;
+    const btn = document.getElementById('govToggleBtn');
+    btn.disabled = true;
+    await writeGovernance(next);
+    btn.disabled = false;
+    loadGovernance();
+  }
+
 </script>
 </body>
 </html>
